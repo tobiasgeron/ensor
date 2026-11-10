@@ -1,5 +1,7 @@
 # ensor
 
+[![codecov](https://codecov.io/gh/tobiasgeron/ensor/graph/badge.svg)](https://codecov.io/gh/tobiasgeron/ensor)
+
 Developed by Tobias Géron at the University of Toronto around Fall 2026. The goal of this code is to help with creating pretty colour images of astronomical observations. 
 
 I've had to create colour images of galaxies a few too many times. Each time, I would dig up old code, try to decipher how it worked, spend too much time trying out different scalings, and figure out what exactly I needed to update. Last week, I realized this could probably be done more efficiently. I decided to create a generalizable system and put everything in a .py file, so that I can use this in the future and save myself some time. Hopefully this saves someone else some time, too.
