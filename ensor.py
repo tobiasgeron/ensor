@@ -274,6 +274,81 @@ def asinh(x, Q = 20, stretch = 1, m = 0):
 
 
 
+def mtf(x, m=0.5, x_max=100.0):
+    """
+    Midtones Transfer Function (MTF).
+
+    It ensures that an input value of 0 maps to 0, the midpoint m maps exactly to 0.5, and 1 maps to 1.
+    
+    f(x) = ((m - 1) * x) / ((2 * m - 1) * x - m)
+
+    Parameters
+    ----------
+    x : array_like or float
+        Input data, in nanomaggies
+    m : float, default 0.5
+        Midtones balance parameter (0 < m < 1).
+        - m = 0.5 results in a linear identity mapping (f(x) = x).
+        - m < 0.5 brightens the midtones (pushes the curve upward).
+        - m > 0.5 darkens the midtones (pulls the curve downward).
+    x_max : float, default 100.0
+            The maximum expected flux (or saturation point). used to 
+            normalize the nanomaggies to [0, 1].
+
+    Returns
+    -------
+    ndarray or float
+        Transformed values clipped between 0 and 1.
+    """
+
+
+    # 1. Normalize nanomaggies to [0, 1]
+    x_norm = np.clip(np.asanyarray(x, dtype=float) / x_max, 0.0, 1.0)
+    
+    # 2. Apply standard MTF formula
+    with np.errstate(divide='ignore', invalid='ignore'):
+        numerator = (m - 1.0) * x_norm
+        denominator = (2.0 * m - 1.0) * x_norm - m
+        
+        val = np.where(np.isclose(m, 0.5), x_norm, numerator / denominator)
+        
+    return np.clip(val, 0.0, 1.0)
+
+
+
+def mtf_inverse(x, alpha = 0.2, crop_fraction = 1, x_max = 100):
+    """
+    Instead of doing the standard MTF (see above) and providing an m, instead, we can calculate what the ideal m should be for a given image.
+    This is done instead setting an alpha parameter, which is essentially the target brightness, and calculating what m should be to 
+    ensure that the average brightness of the image is at alpha. 
+    
+    E.g., if alpha = 0.2, then calculate m to ensure the average brightness of this image to lands at 20% of maximum after applying MTF.
+
+    The "average brightness" is calculated at a cutout of the image at the center, with a size of crop_fraction*size. 
+    This typically works well for images with e.g., a central galaxy. 
+
+    This is what we did for GZ JWST Cosmos-Web.
+
+    This also implicitly assumes the image is a square...
+    """
+    assert crop_fraction >= 0 and crop_fraction <= 1, "crop_fraction should be between 0 and 1"
+
+    # Normalize x by x_max
+    x_norm = np.clip(np.asanyarray(x, dtype=float) / x_max, 0.0, 1.0)
+
+    # Get average intensity x by zooming in on center of (assumed to be square) image.
+    central_crop_size = int(crop_fraction * x_norm.shape[1])
+    central_crop_low_edge = x_norm.shape[1]//2 - central_crop_size//2
+    central_crop_high_edge = x_norm.shape[1]//2 + central_crop_size//2
+
+    normalized_data_selected = x_norm[central_crop_low_edge:central_crop_high_edge, central_crop_low_edge:central_crop_high_edge]
+    
+    x_mean = np.mean(normalized_data_selected)
+
+    target_m = (x_mean - alpha * x_mean) / (x_mean - 2 * alpha * x_mean + alpha)
+
+    return mtf(x_norm, m=target_m, x_max=1.0)#We already normalized so x_max = 1
+
 ### ====================== ###
 ### Asinh helper functions ###
 ### ====================== ###
