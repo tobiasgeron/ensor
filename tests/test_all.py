@@ -70,6 +70,142 @@ class TestScalingFunctions:
 
 
 
+    def test_log_scaling_defaults(self):
+        """Test log scaling function with default parameter a=2."""
+        from ensor import log
+        
+        # Test x = 0: log(0 + 1) / log(3) = 0 / log(3) = 0.0
+        assert np.isclose(log(0.0), 0.0)
+        
+        # Test x = 1: log(2*1 + 1) / log(3) = log(3) / log(3) = 1.0
+        assert np.isclose(log(1.0), 1.0)
+
+    def test_log_scaling_custom_parameter(self):
+        """Test log scaling function with a custom parameter a."""
+        from ensor import log
+        
+        # If a = 4, x = 1 -> log(4*1 + 1) / log(5) = log(5) / log(5) = 1.0
+        assert np.isclose(log(1.0, a=4.0), 1.0)
+
+    def test_asinh_basic_defaults(self):
+        """Test asinh_basic with default beta=10 and x0=0."""
+        from ensor import asinh_basic
+        
+        # At x = 0, asinh(0 / 10) = 0.0
+        assert np.isclose(asinh_basic(0.0), 0.0)
+        
+        # At x = 10, asinh(10 / 10) = asinh(1.0)
+        expected = np.arcsinh(1.0)
+        assert np.isclose(asinh_basic(10.0), expected)
+
+    def test_asinh_basic_custom_params(self):
+        """Test asinh_basic with custom offset x0 and softening parameter beta."""
+        from ensor import asinh_basic
+        
+        x = np.array([5.0, 15.0])
+        # x0 = 5, beta = 5 -> (x - 5) / 5 -> [0, 2]
+        result = asinh_basic(x, beta=5.0, x0=5.0)
+        expected = np.asinh(np.array([0.0, 2.0]))
+        
+        np.testing.assert_allclose(result, expected)
+
+    def test_asinh_alternative_defaults_and_clipping(self):
+        """Test asinh_alternative defaults and verify negative values clip to 0."""
+        from ensor import asinh_alternative
+        
+        # Test input below m (m=0) which results in negative inner values, 
+        # ensuring np.maximum(val, 0) correctly clips them to 0.0
+        x_negative = np.array([-5.0, 0.0, 10.0])
+        result = asinh_alternative(x_negative, Q=10.0, stretch=10.0, m=0.0)
+        
+        assert result[0] == 0.0  # Clipped from negative
+        assert result[1] == 0.0  # asinh(0) / 10 = 0.0
+        assert result[2] > 0.0   # Positive scaling
+
+    def test_asinh_alternative_custom_m_and_stretch(self):
+        """Test asinh_alternative behavior with custom offset m and stretch."""
+        from ensor import asinh_alternative
+        
+        # If x = m, (x - m) = 0, so result should be 0.0
+        val_at_m = asinh_alternative(5.0, Q=10.0, stretch=5.0, m=5.0)
+        assert np.isclose(val_at_m, 0.0)
+
+
+
+
+class TestMTFFunctions:
+
+    def test_mtf_identity(self):
+        """Test that m=0.5 results in a linear identity mapping (f(x) = x_norm)."""
+        from ensor import mtf
+        
+        # Values ranging from 0 to 100 (matching x_max=100)
+        x = np.array([0.0, 25.0, 50.0, 75.0, 100.0])
+        result = mtf(x, m=0.5, x_max=100.0)
+        expected = x / 100.0
+        
+        np.testing.assert_allclose(result, expected, rtol=1e-5)
+
+    def test_mtf_boundary_conditions(self):
+        """Test exact boundary behaviors: 0 maps to 0, x_max maps to 1."""
+        from ensor import mtf
+        
+        x = np.array([0.0, 100.0])
+        result = mtf(x, m=0.3, x_max=100.0)
+        
+        assert np.isclose(result[0], 0.0)
+        assert np.isclose(result[1], 1.0)
+
+    def test_mtf_clipping_and_overflow(self):
+        """Test that values exceeding x_max are safely clipped to 1.0."""
+        from ensor import mtf
+        
+        x = np.array([-10.0, 50.0, 150.0]) # Below 0 and above x_max
+        result = mtf(x, m=0.5, x_max=100.0)
+        
+        assert result[0] == 0.0
+        assert result[2] == 1.0
+        assert np.all((result >= 0.0) & (result <= 1.0))
+
+    def test_mtf_inverse_basic_execution(self):
+        """Test that mtf_inverse runs correctly on a square array and returns valid shape/bounds."""
+        from ensor import mtf_inverse
+        
+        # Create a synthetic 20x20 square image
+        np.random.seed(42)
+        img = np.random.uniform(5.0, 45.0, size=(20, 20))
+        
+        transformed = mtf_inverse(img, alpha=0.2, crop_fraction=1.0, x_max=100.0)
+        
+        # Check shape preservation and output range [0, 1]
+        assert transformed.shape == (20, 20)
+        assert np.min(transformed) >= 0.0
+        assert np.max(transformed) <= 1.0
+
+    def test_mtf_inverse_crop_fraction_variations(self):
+        """Test mtf_inverse with partial central crops (e.g., crop_fraction = 0.5)."""
+        from ensor import mtf_inverse
+        
+        img = np.linspace(10, 80, 400).reshape(20, 20)
+        
+        # Should execute successfully without throwing index or slice errors
+        transformed = mtf_inverse(img, alpha=0.25, crop_fraction=0.5, x_max=100.0)
+        assert transformed.shape == (20, 20)
+
+    def test_mtf_inverse_invalid_crop_fraction(self):
+        """Test that invalid crop fractions outside [0, 1] trigger an AssertionError."""
+        from ensor import mtf_inverse
+        
+        img = np.ones((10, 10))
+        
+        with pytest.raises(AssertionError, match="crop_fraction should be between 0 and 1"):
+            mtf_inverse(img, alpha=0.2, crop_fraction=1.5, x_max=100.0)
+            
+        with pytest.raises(AssertionError, match="crop_fraction should be between 0 and 1"):
+            mtf_inverse(img, alpha=0.2, crop_fraction=-0.1, x_max=100.0)
+
+
+
 
 class TestAsinhHelpers:
     def test_calculate_Isat(self):
@@ -248,6 +384,41 @@ class TestPlottingFunctions:
         assert ax.get_ylabel() == 'log(Output)'
         assert ax.get_xlabel() == 'Nanomaggy'
         plt.close(fig)
+
+
+    def test_plot_curve_test_axes_run(self):
+            from ensor import plot_curve, sqrt
+            
+            fig, ax = plt.subplots()
+            
+            # Test with both log axes
+            plot_curve(
+                func=sqrt,
+                plot_yaxis_log=True,
+                plot_mag=True,
+                axvlines=[],
+                clip=True,
+                ax=ax
+            )
+
+            plt.close(fig)
+
+
+
+            fig, ax = plt.subplots()
+                        
+            # Test with both linear axes
+            plot_curve(
+                func=sqrt,
+                plot_yaxis_log=False,
+                plot_mag=False,
+                axvlines=[],
+                clip=True,
+                ax=ax
+            )
+
+            plt.close(fig)
+    
 
 
 
