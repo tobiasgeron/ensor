@@ -37,7 +37,9 @@ def plot_image(image, percentile = [0., 100.], ax = None, cmap = 'gray_r', figsi
 
 
 def plot_curve(func, plot_yaxis_log = False, plot_mag = True, axvlines = [], clip = True, ax = None, figsize=(7, 4), label = '', **kwargs):
-
+    '''
+    This only works for absolute scalings, not relative ones!
+    '''
     xmin = 1e-5
     xmax = 15
 
