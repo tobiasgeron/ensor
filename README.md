@@ -65,7 +65,7 @@ weights = dict( # map bands into corresponding r,g,b channels.
     z = (2.2, 0, 0),
 )
 
-rgb = make_image(imgs, bands, weights, func = asinh) # the main functionofs this code
+rgb = make_image(imgs, bands, weights, func = asinh) # the main function of this code
 plot_image(rgb)
 ```
 
