@@ -73,6 +73,15 @@ Please do check out the tutorials!
 
 
 
+### Examples of different scalings
+
+Ensor comes with multiple built-in scalings, such as: linear, sqrt, log, asinh, and MTF. 
+
+![Different scalings](figures/example.png)
+
+
+
+
 ### Why "ensor"?
 
 This code was named after [James Ensor](https://en.wikipedia.org/wiki/James_Ensor), a famous Belgian painter. I imagine he would have less trouble with colouring galaxies than me. 
