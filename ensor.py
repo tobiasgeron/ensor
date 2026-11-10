@@ -115,14 +115,14 @@ def plot_curve(func, plot_yaxis_log = False, plot_mag = True, axvlines = [], cli
 
 def estimate_noise(img):
     '''
-    You can estimate the noise level emprically from an image by using the median absolute deviation
+    You can estimate the noise level empirically from an image by using the median absolute deviation
     '''
 
     return 1.4826 * np.nanmedian(np.abs(img - np.nanmedian(img)))
 
 
 ### ========================== ###
-### Unit converstion functions ###
+### Unit conversion functions ###
 ### ========================== ###
 
 
@@ -328,7 +328,7 @@ def calculate_x_sat(Q, weight, stretch, m):
     
     '''
     Isat = np.sinh(np.sqrt(Q))/Q
-    xsat = (Isat - m) / weight * stretch
+    xsat = (Isat - m) / (weight * stretch)
     return xsat
 
 
@@ -393,32 +393,32 @@ def calculate_x_knee(Q, weight, stretch, m):
 ### ============== ###
 
 
-def make_image_old(imgs, bands, weights = None, func = None, clip=True, **func_kwargs):
+# def make_image_old(imgs, bands, weights = None, func = None, clip=True, **func_kwargs):
     
-    if weights is None:
-        raise Exception('Need to input weights')
+#     if weights is None:
+#         raise Exception('Need to input weights')
 
-    if func is None:
-        raise Exception('Need to input func')
+#     if func is None:
+#         raise Exception('Need to input func')
 
 
-    img_dict = {}
-    for img, band_name in zip(imgs, bands):
-        img_dict[band_name] = img
+#     img_dict = {}
+#     for img, band_name in zip(imgs, bands):
+#         img_dict[band_name] = img
 
-    red = sum([img_dict[band_name] * weights[band_name][0] for band_name in bands])
-    green = sum([img_dict[band_name] * weights[band_name][1] for band_name in bands])
-    blue = sum([img_dict[band_name] * weights[band_name][2] for band_name in bands])
+#     red = sum([img_dict[band_name] * weights[band_name][0] for band_name in bands])
+#     green = sum([img_dict[band_name] * weights[band_name][1] for band_name in bands])
+#     blue = sum([img_dict[band_name] * weights[band_name][2] for band_name in bands])
 
-    red = func(red, **func_kwargs)
-    green = func(green, **func_kwargs)
-    blue = func(blue, **func_kwargs)
+#     red = func(red, **func_kwargs)
+#     green = func(green, **func_kwargs)
+#     blue = func(blue, **func_kwargs)
 
     
-    rgb = np.stack([red, green, blue], axis=-1)
-    if clip:
-        rgb = np.clip(rgb,0,1) 
-    return rgb
+#     rgb = np.stack([red, green, blue], axis=-1)
+#     if clip:
+#         rgb = np.clip(rgb,0,1) 
+#     return rgb
 
 
 
