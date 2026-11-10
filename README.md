@@ -1,6 +1,6 @@
 # ensor
 
-[![CI](https://github.com/tobiasgeron/flexAE/actions/workflows/main.yml/badge.svg)](https://github.com/tobiasgeron/flexAE/actions/workflows/main.yml)
+[![CI](https://github.com/tobiasgeron/ensor/actions/workflows/main.yml/badge.svg)](https://github.com/tobiasgeron/ensor/actions/workflows/main.yml)
 [![codecov](https://codecov.io/gh/tobiasgeron/ensor/graph/badge.svg)](https://codecov.io/gh/tobiasgeron/ensor)
 
 Developed by Tobias Géron at the University of Toronto around Fall 2026. The goal of this code is to help with creating pretty colour images of astronomical observations. 
