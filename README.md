@@ -7,7 +7,7 @@ Developed by Tobias Géron at the University of Toronto around Fall 2026. The go
 
 I've had to create colour images of galaxies a few too many times. Each time, I would dig up old code, try to decipher how it worked, spend too much time trying out different scalings, and figure out what exactly I needed to update. Last week, I realized this could probably be done more efficiently. I decided to create a generalizable system and put everything in a .py file, so that I can use this in the future and save myself some time. Hopefully this saves someone else some time, too.
 
-To be clear; this is nothing revolutionary. I just wanted my own version of these colouring codes (see below) that I fully understood and can easily manipulate. In short, this is a lightweight and flexible code, which allows users to easily define their own weights and stretch/scaling functions, and help fine-tune these scaling parameters.
+To be clear; this is nothing revolutionary. I just wanted my own version of these colouring codes (see below) that I fully understood and can easily manipulate. In short, this is a lightweight and flexible code, which allows users to easily define their own weights and stretch/scaling functions, and help fine-tune associated scaling parameters.
 
 This code is heavily inspired by [Lupton+2004](https://arxiv.org/abs/astro-ph/0312483), the [Legacy Survey pipeline](https://github.com/legacysurvey/legacypipe/blob/f77ed93c4e9df40e27aec132fd9a9db0c78678d5/py/legacypipe/survey.py#L719), and Astropy's [make_lupon_rgb](https://docs.astropy.org/en/stable/api/astropy.visualization.make_lupton_rgb.html). 
     

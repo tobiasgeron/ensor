@@ -14,3 +14,4 @@ and then open it:
 jupyter notebook
 ```
 
+This will open a browser window, where you can navigate to the tutorial and open it.
