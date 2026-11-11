@@ -19,6 +19,19 @@ import matplotlib.pyplot as plt
 # Need to have pytest and pytest-cov installed
 
 
+from ensor import linear, log, sqrt, asinh_basic, asinh_alternative, asinh, mtf, mtf_inverse
+ALL_SCALING_FUNCTIONS = [linear, log, sqrt, asinh_basic, asinh_alternative, asinh, mtf, mtf_inverse]
+
+
+def create_random_noise(shape = (32,32), n_bands = 3):
+    imgs = []
+    for band in range(n_bands):
+        imgs.append(np.random.normal(0.0, 1.0, size=shape))
+    return imgs
+
+
+
+
 
 ### Test Unit conversions
 class TestUnitConversions:
@@ -253,7 +266,30 @@ class TestAsinhHelpers:
 
 
 
+
+
 class TestMakeImage:
+
+    @pytest.mark.parametrize("func", ALL_SCALING_FUNCTIONS)
+    def test_make_image_for_all_scalings(self, func):
+        """Check that all scaling functions do indeed produce images"""
+        from ensor import make_image
+
+        imgs = create_random_noise()
+
+        bands = ['g', 'r', 'i']
+        weights = {
+            'g': (0, 0, 1),
+            'r': (0, 1, 0),
+            'i': (1, 0, 0)
+        }
+
+        rgb = make_image(imgs, bands, weights=weights, func=func)
+
+        
+        
+
+
     def test_make_image_greyscale_warning(self):
         """Test that passing weights=None defaults to greyscale and raises a UserWarning."""
         from ensor import make_image, asinh
@@ -302,6 +338,10 @@ class TestMakeImage:
         img = np.zeros((10, 10))
         with pytest.raises(Exception, match="You need to input a scaling/stretch function"):
             make_image([img], bands=['g'], weights={'g': (1,1,1)}, func=None)
+
+
+
+
 
 
 
